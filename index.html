@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+  <meta charset = "UTF-8">
+  <meta name = "viewport" content="width=device-width,initial-scale=1.0">
+  <title> WRL Command Centre-Livee API Edition</title>
+  <link rel = "stylesheet" href ="style.css">
+</head>
+<body>
+
+  <div-class ="dashboard-container">
+    <div class="column">
+            <div class="panel">
+                <div class="clock-display">
+                    <div class="panel-header">UTC</div>
+                    <div class="clock-time" id="utcClock">--:--:--</div>
+                    <div class="clock-date" id="utcDate">Loading...</div>
+                </div>
+                <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+                <div class="clock-display">
+                    <div class="panel-header">Local</div>
+                    <div class="clock-time" id="localClock">--:--:--</div>
+                    <div class="clock-date" id="localDate">Loading...</div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex-grow: 1;">
+                <div class="panel-header">DE - Your Location <span class="highlight">DHAKA</span></div>
+                <div class="info-grid">
+                    <div class="info-label">Grid</div><div class="info-value location-highlight">NL53js</div>
+                    <div class="info-label">Coords</div><div class="info-value">23.8103°N, 90.4125°E</div>
+                    <div class="info-label">QTH</div><div class="info-value">Dhaka, Bangladesh</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">Live Weather Tracking</div>
+                <div class="weather-display">
+                    <div class="weather-temp"><span id="temp-val">--</span>°<span>C</span></div>
+                    <div class="weather-icon-sim"></div>
+                    <div class="weather-details">
+                        <div>Wind: <b id="wind-val">--</b> km/h</div>
+                        <div>Condition: <b id="weather-cond" style="color: #6da7ff;">Live Updating...</b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel map-panel">
+            <button class="map-settings-btn">⚙</button>
+            <div class="map-zoom-controls">
+                <button class="zoom-btn">+</button>
+                <button class="zoom-btn">-</button>
+            </div>
+            
+            <div class="globe-canvas-container">
+                <canvas id="globeCanvas" width="450" height="450"></canvas>
+            </div>
+
+            <div class="map-legend">
+                <div class="legend-title">LIVE SPOTS — SHAPE: MODE | COLOR: BAND</div>
+                <div class="legend-row">
+                    <div class="legend-item"><span class="square" style="background:#fff;"></span> CW</div>
+                    <div class="legend-item"><span class="square" style="background:#5da2ff;"></span> SSB</div>
+                    <div class="legend-item"><span class="square" style="background:#ff52a3;"></span> FT8/FT4</div>
+                    <div class="legend-item"><span class="triangle" style="border-bottom-color:#00ffaa;"></span> FM/AM</div>
+                    <div class="legend-item"><span class="dot" style="background:#bc73ff;"></span> Digital</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="panel">
+                <div class="panel-header">Solar Data — NOAA API</div>
+                <div class="solar-img-container">
+                    <div class="solar-sphere"></div>
+                </div>
+                
+                <div class="solar-metrics">
+                    <div class="metric-box"><div class="metric-lbl">SFI</div><div class="metric-val" id="sfi-val">--</div></div>
+                    <div class="metric-box"><div class="metric-lbl">KP Index</div><div class="metric-val" id="kp-val" style="color:#22cc66;">--</div></div>
+                    <div class="metric-box"><div class="metric-lbl">A Index</div><div class="metric-val" id="a-val">--</div></div>
+                    <div class="metric-box"><div class="metric-lbl">Status</div><div class="metric-val" id="solar-status" style="color:#00bfff; font-size:0.8rem;">Live</div></div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex-grow: 1; justify-content: flex-start;">
+                <div class="panel-header">Propagation Insights</div>
+                <div class="gauges-container">
+                    <div class="gauge-wrapper">
+                        <svg class="gauge-svg"><circle class="gauge-bg" cx="35" cy="35" r="25"></circle><circle id="sfi-gauge" class="gauge-fill yellow" cx="35" cy="35" r="25" style="stroke-dashoffset: 157;"></circle></svg>
+                        <div class="gauge-text" id="sfi-gauge-text">--</div>
+                        <span class="gauge-label">SFI</span>
+                    </div>
+                    <div class="gauge-wrapper">
+                        <svg class="gauge-svg"><circle class="gauge-bg" cx="35" cy="35" r="25"></circle><circle id="kp-gauge" class="gauge-fill green" cx="35" cy="35" r="25" style="stroke-dashoffset: 157;"></circle></svg>
+                        <div class="gauge-text" id="kp-gauge-text">--</div>
+                        <span class="gauge-label">K Index</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-news-bar">
+        <div class="news-title">DX NEWS <span>Live API</span></div>
+        <div class="ticker-wrap">
+            <div class="ticker-move" id="live-ticker">
+                <span class="ticker-item class-normal">Fetching Live News...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
