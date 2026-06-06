@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
 <head>
-  <meta charset = "UTF-8">
-  <meta name = "viewport" content="width=device-width,initial-scale=1.0">
-  <title> WRL Command Centre-Livee API Edition</title>
-  <link rel = "stylesheet" href ="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WRL Command Center - Live API Edition</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div-class ="dashboard-container">
-    <div class="column">
+    <button id="themeToggle" class="theme-btn">☀️ Light Mode</button>
+
+    <div class="dashboard-container">
+        <div class="column">
             <div class="panel">
                 <div class="clock-display">
                     <div class="panel-header">UTC</div>
@@ -36,7 +38,7 @@
             <div class="panel">
                 <div class="panel-header">Live Weather Tracking</div>
                 <div class="weather-display">
-                    <div class="weather-temp"><span id="temp-val">--</span>°<span>C</span></div>
+                    <div class="weather-temp"><span id="temp-val">--</span>°<span style="font-size: 1rem; color: var(--text-secondary);">C</span></div>
                     <div class="weather-icon-sim"></div>
                     <div class="weather-details">
                         <div>Wind: <b id="wind-val">--</b> km/h</div>
@@ -111,7 +113,10 @@
         </div>
     </div>
 
+    <div class="footer-credit">
+        developed by md.emtiaz hossain sami dept of software eng,daffodil international univeristy @2026
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-</body>
