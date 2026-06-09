@@ -3,14 +3,17 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
     background-color: #111;
     color: #fff;
     padding: 20px;
+    padding-top: 60px; /* Space for theme button */
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .dashboard {
@@ -212,3 +215,73 @@ body {
 }
 .arc-green { border-color: #00ff7f; }
 .arc-yellow { border-color: #ffd700; }
+
+/* --- Theme Toggle Switch UI --- */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    z-index: 100;
+}
+#theme-text {
+    color: #6ebb78;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 50px;
+}
+.theme-switch input { display: none; }
+.slider {
+    background-color: #2e4a31;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+}
+.slider.round { border-radius: 24px; }
+.slider.round:before { border-radius: 50%; }
+input:checked + .slider { background-color: #ccc; }
+input:checked + .slider:before { transform: translateX(26px); background-color: #333; }
+
+/* --- LIGHT MODE LOOK OVERRIDES --- */
+body.light-mode {
+    background-color: #f4f7f6;
+    color: #333;
+}
+body.light-mode .panel {
+    background-color: #ffffff;
+    border-color: #d1d9d3;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+body.light-mode .label, body.light-mode #theme-text { color: #2e4a31 !important; }
+body.light-mode .time-panel .date, body.light-mode .temp .unit { color: #666; }
+body.light-mode .panel-header { border-bottom-color: #d1d9d3; }
+body.light-mode .map-panel { background-color: #fff; border-color: #d1d9d3; }
+body.light-mode .map-legend { background-color: #f4f7f6; border-top-color: #d1d9d3; color: #555; }
+body.light-mode .sun-image-placeholder { background-color: #eee; }
+body.light-mode .dropdown { background-color: #fff; color: #333; border-color: #ccc; }
+body.light-mode .highlight-yellow { color: #d97706; }
+body.light-mode .highlight-green { color: #059669; }
+body.light-mode .arc-green { border-color: #059669; }
+body.light-mode .arc-yellow { border-color: #d97706; }
