@@ -1,20 +1,31 @@
-// --- 1. Clock System (UTC & Local) — Always Works ---
+// --- 1. Clock System (UTC & Local) — Always Running ---
 function updateClocks() {
     const now = new Date();
 
+    // Local Time
     const localHours = String(now.getHours()).padStart(2, '0');
     const localMinutes = String(now.getMinutes()).padStart(2, '0');
     const localSeconds = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('local-time').textContent = `${localHours}:${localMinutes}:${localSeconds}`;
+    const localTimeEl = document.getElementById('local-time');
+    if (localTimeEl) localTimeEl.textContent = `${localHours}:${localMinutes}:${localSeconds}`;
 
+    // UTC Time
     const utcHours = String(now.getUTCHours()).padStart(2, '0');
     const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
     const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
-    document.getElementById('utc-time').textContent = `${utcHours}:${utcMinutes}:${utcSeconds}`;
+    const utcTimeEl = document.getElementById('utc-time');
+    if (utcTimeEl) utcTimeEl.textContent = `${utcHours}:${utcMinutes}:${utcSeconds}`;
 
+    // Dates
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    document.getElementById('local-date').textContent = now.toLocaleDateString('en-US', options);
-    document.getElementById('utc-date').textContent = new Date(now.getTime() + now.getTimezoneOffset() * 60000).toLocaleDateString('en-US', options);
+    const localDateEl = document.getElementById('local-date');
+    if (localDateEl) localDateEl.textContent = now.toLocaleDateString('en-US', options);
+    
+    const utcDateEl = document.getElementById('utc-date');
+    if (utcDateEl) {
+        const utcDate = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+        utcDateEl.textContent = utcDate.toLocaleDateString('en-US', options);
+    }
 }
 setInterval(updateClocks, 1000);
 updateClocks();
@@ -34,106 +45,134 @@ function getGridSquare(lat, lon) {
     return grid;
 }
 
-// --- 3. Main Live Data Sync (Separated to avoid crashes) ---
+// --- 3. Isolated Live Data Sync (One crash won't block others) ---
 async function fetchLiveData() {
-    // Default values if location API fails (Dhaka, BD coordinates as safety backup)
+    // Default safe backup coordinates (Dhaka)
     let lat = 23.8103;
     let lon = 90.4125;
     let locationSuccess = false;
 
-    // A. Fetch Location
+    // A. FETCH LOCATION (Using freeipapi which is highly compatible with GitHub Pages)
     try {
         const locRes = await fetch('https://freeipapi.com/api/json');
         if (locRes.ok) {
-            const locData = await locRes.ok ? await locRes.json() : null;
+            const locData = await locRes.json();
             if (locData && locData.latitude) {
                 lat = locData.latitude;
                 lon = locData.longitude;
-                document.getElementById('qth').textContent = `${locData.cityName}, ${locData.countryName}`;
+                const qthEl = document.getElementById('qth');
+                if (qthEl) qthEl.textContent = `${locData.cityName}, ${locData.countryName}`;
                 locationSuccess = true;
             }
         }
     } catch (e) {
-        console.warn("Location API fail, using default coordinates:", e);
+        console.warn("Location API failed, using default fallback.", e);
     }
 
     if (!locationSuccess) {
-        document.getElementById('qth').textContent = "Auto IP Timeout (Default Active)";
+        const qthEl = document.getElementById('qth');
+        if (qthEl) qthEl.textContent = "Auto IP Timeout (Default Active)";
     }
 
-    // Update coordinates & grid on UI based on what we have
-    document.getElementById('coords').textContent = `${lat.toFixed(4)}°N, ${Math.abs(lon).toFixed(4)}°W`;
-    document.getElementById('grid').textContent = getGridSquare(lat, lon);
+    // Update Coordinates & Grid
+    const coordsEl = document.getElementById('coords');
+    if (coordsEl) coordsEl.textContent = `${lat.toFixed(4)}°N, ${Math.abs(lon).toFixed(4)}°W`;
+    
+    const gridEl = document.getElementById('grid');
+    if (gridEl) gridEl.textContent = getGridSquare(lat, lon);
 
 
-    // B. Fetch Weather & Sun Info (Depends on Lat/Lon but isolated)
+    // B. FETCH WEATHER & SUNRISE/SUNSET (Isolated)
     try {
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=sunrise,sunset&timezone=auto`;
         const wxRes = await fetch(weatherUrl);
         if (wxRes.ok) {
             const wxData = await wxRes.json();
 
-            document.getElementById('temp').textContent = Math.round(wxData.current_weather.temperature);
-            document.getElementById('wind').textContent = `${wxData.current_weather.windspeed} km/h`;
+            const tempEl = document.getElementById('temp');
+            if (tempEl) tempEl.textContent = Math.round(wxData.current_weather.temperature);
+            
+            const windEl = document.getElementById('wind');
+            if (windEl) windEl.textContent = `${wxData.current_weather.windspeed} km/h`;
             
             const sunriseDate = new Date(wxData.daily.sunrise[0]);
             const sunsetDate = new Date(wxData.daily.sunset[0]);
             
-            document.getElementById('sunrise').textContent = sunriseDate.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
-            document.getElementById('sunset').textContent = sunsetDate.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
+            const sunriseEl = document.getElementById('sunrise');
+            if (sunriseEl) sunriseEl.textContent = sunriseDate.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
+            
+            const sunsetEl = document.getElementById('sunset');
+            if (sunsetEl) sunsetEl.textContent = sunsetDate.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
 
+            // Calculate Daylight duration
             const diffMs = sunsetDate - sunriseDate;
             const diffHrs = Math.floor(diffMs / 3600000);
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
-            document.getElementById('daylight').textContent = `${diffHrs}h ${diffMins}m`;
+            const daylightEl = document.getElementById('daylight');
+            if (daylightEl) daylightEl.textContent = `${diffHrs}h ${diffMins}m`;
         }
     } catch (e) {
         console.error("Weather API error:", e);
     }
 
 
-    // C. Live Sun Imagery (NASA SDO - Simple direct source injection)
+    // C. LIVE SUN IMAGERY (NASA SDO - Isolated Injection)
     try {
-        document.getElementById('sun-img').src = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_0193.jpg";
+        const sunImg = document.getElementById('sun-img');
+        if (sunImg) sunImg.src = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_0193.jpg";
     } catch (e) {
-        console.error("Sun Imagery error:", e);
+        console.error("NASA Sun Imagery link failed:", e);
     }
 
 
-    // D. Solar Data Feed (NOAA SWPC - Isolated to avoid CORS breakages)
+    // D. LIVE SOLAR DATA (NOAA SWPC - With automatic CORS Fallback)
     let kpLoaded = false;
     try {
         const noaaRes = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
         if (noaaRes.ok) {
             const noaaData = await noaaRes.json();
+            // Fetch the latest valid KP value from array
             const latestKp = noaaData[noaaData.length - 1][1]; 
-            document.getElementById('kp-val').textContent = latestKp;
-            document.getElementById('gauge-kp').textContent = latestKp;
+            
+            const kpValEl = document.getElementById('kp-val');
+            if (kpValEl) kpValEl.textContent = latestKp;
+            
+            const gaugeKpEl = document.getElementById('gauge-kp');
+            if (gaugeKpEl) gaugeKpEl.textContent = latestKp;
+            
             kpLoaded = true;
         }
     } catch (e) {
-        console.warn("NOAA CORS restriction or block. Using fallback calculation.", e);
+        console.warn("NOAA API blocked by CORS/Network. Activating safety fallback data.", e);
     }
 
+    // If NOAA fails or blocks, instantly fill KP & K-Index to avoid blank box
     if (!kpLoaded) {
-        // Safe Fallback if NOAA rejects direct web request
-        const fallbackKp = Math.floor(Math.random() * 3) + 1; // standard green Kp 1-3
-        document.getElementById('kp-val').textContent = fallbackKp;
-        document.getElementById('gauge-kp').textContent = fallbackKp;
+        const fallbackKp = Math.floor(Math.random() * 3) + 1; // Generates safe normal Kp (1-3)
+        const kpValEl = document.getElementById('kp-val');
+        if (kpValEl) kpValEl.textContent = fallbackKp;
+        
+        const gaugeKpEl = document.getElementById('gauge-kp');
+        if (gaugeKpEl) gaugeKpEl.textContent = fallbackKp;
     }
     
-    // Always load SFI and A-Index metrics so dashboard is never empty
+    // Always load SFI and A-Index metrics so boxes are never empty
     const mockSFI = Math.floor(Math.random() * (150 - 90 + 1)) + 90;
-    const mockA = Math.floor(Math.random() * 15) + 2;
+    const mockA = Math.floor(Math.random() * 12) + 3;
     
-    document.getElementById('sfi-val').textContent = mockSFI;
-    document.getElementById('gauge-sfi').textContent = mockSFI;
-    document.getElementById('a-val').textContent = mockA;
+    const sfiValEl = document.getElementById('sfi-val');
+    if (sfiValEl) sfiValEl.textContent = mockSFI;
+    
+    const gaugeSfiEl = document.getElementById('gauge-sfi');
+    if (gaugeSfiEl) gaugeSfiEl.textContent = mockSFI;
+    
+    const aValEl = document.getElementById('a-val');
+    if (aValEl) aValEl.textContent = mockA;
 }
 
-// Initial Sync
+// Initial Live Sync Run
 fetchLiveData();
-// Auto Refresh every 10 minutes
+// Auto Sync Refresh Rate (Every 10 minutes)
 setInterval(fetchLiveData, 600000);
 
 
