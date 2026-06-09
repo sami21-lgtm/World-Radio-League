@@ -1,4 +1,4 @@
-// --- 1. Clock System (UTC & Local) — Always Running ---
+// --- 1. Clock System (UTC & Local) — এটি কোনো বাধা ছাড়াই সবসময় চলবে ---
 function updateClocks() {
     const now = new Date();
 
@@ -45,14 +45,14 @@ function getGridSquare(lat, lon) {
     return grid;
 }
 
-// --- 3. Isolated Live Data Sync (One crash won't block others) ---
+// --- 3. Main Fetch Function (সম্পূর্ণ আলাদা করা ব্লক, যাতে একটি ক্র্যাশ করলে অন্যটি না আটকায়) ---
 async function fetchLiveData() {
     // Default safe backup coordinates (Dhaka)
     let lat = 23.8103;
     let lon = 90.4125;
     let locationSuccess = false;
 
-    // A. FETCH LOCATION (Using freeipapi which is highly compatible with GitHub Pages)
+    // A. LOCATION FETCH
     try {
         const locRes = await fetch('https://freeipapi.com/api/json');
         if (locRes.ok) {
@@ -66,7 +66,7 @@ async function fetchLiveData() {
             }
         }
     } catch (e) {
-        console.warn("Location API failed, using default fallback.", e);
+        console.warn("Location API Failed.");
     }
 
     if (!locationSuccess) {
@@ -74,7 +74,7 @@ async function fetchLiveData() {
         if (qthEl) qthEl.textContent = "Auto IP Timeout (Default Active)";
     }
 
-    // Update Coordinates & Grid
+    // Coordinates & Grid আপডেট
     const coordsEl = document.getElementById('coords');
     if (coordsEl) coordsEl.textContent = `${lat.toFixed(4)}°N, ${Math.abs(lon).toFixed(4)}°W`;
     
@@ -82,7 +82,7 @@ async function fetchLiveData() {
     if (gridEl) gridEl.textContent = getGridSquare(lat, lon);
 
 
-    // B. FETCH WEATHER & SUNRISE/SUNSET (Isolated)
+    // B. WEATHER & SUNRISE/SUNSET FETCH (Isolated)
     try {
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=sunrise,sunset&timezone=auto`;
         const wxRes = await fetch(weatherUrl);
@@ -104,7 +104,6 @@ async function fetchLiveData() {
             const sunsetEl = document.getElementById('sunset');
             if (sunsetEl) sunsetEl.textContent = sunsetDate.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit', hour12: false});
 
-            // Calculate Daylight duration
             const diffMs = sunsetDate - sunriseDate;
             const diffHrs = Math.floor(diffMs / 3600000);
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
@@ -116,39 +115,32 @@ async function fetchLiveData() {
     }
 
 
-    // C. LIVE SUN IMAGERY (NASA SDO - Isolated Injection)
-    try {
-        const sunImg = document.getElementById('sun-img');
-        if (sunImg) sunImg.src = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_0193.jpg";
-    } catch (e) {
-        console.error("NASA Sun Imagery link failed:", e);
-    }
-
-
-    // D. LIVE SOLAR DATA (NOAA SWPC - With automatic CORS Fallback)
+    // C. NOAA REAL-TIME SOLAR DATA FETCH (CORS Safe Fallback)
+    // এই ব্লকটি সম্পূর্ণ আলাদা করা হয়েছে, তাই এটি ফেইল করলেও কোড ক্র্যাশ করবে না।
     let kpLoaded = false;
     try {
         const noaaRes = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
         if (noaaRes.ok) {
             const noaaData = await noaaRes.json();
-            // Fetch the latest valid KP value from array
-            const latestKp = noaaData[noaaData.length - 1][1]; 
-            
-            const kpValEl = document.getElementById('kp-val');
-            if (kpValEl) kpValEl.textContent = latestKp;
-            
-            const gaugeKpEl = document.getElementById('gauge-kp');
-            if (gaugeKpEl) gaugeKpEl.textContent = latestKp;
-            
-            kpLoaded = true;
+            if (noaaData && noaaData.length > 0) {
+                const latestKp = noaaData[noaaData.length - 1][1]; 
+                
+                const kpValEl = document.getElementById('kp-val');
+                if (kpValEl) kpValEl.textContent = latestKp;
+                
+                const gaugeKpEl = document.getElementById('gauge-kp');
+                if (gaugeKpEl) gaugeKpEl.textContent = latestKp;
+                
+                kpLoaded = true;
+            }
         }
     } catch (e) {
-        console.warn("NOAA API blocked by CORS/Network. Activating safety fallback data.", e);
+        console.warn("NOAA API Blocked. Activating instant fallback.");
     }
 
-    // If NOAA fails or blocks, instantly fill KP & K-Index to avoid blank box
+    // যদি কোনো কারণে NOAA ডাটা না দেয়, ব্রাউজার সাথে সাথে এই ব্যাকআপ ডাটা দিয়ে ঘর দুটি ভরে দেবে (ফাঁকা থাকবে না)
     if (!kpLoaded) {
-        const fallbackKp = Math.floor(Math.random() * 3) + 1; // Generates safe normal Kp (1-3)
+        const fallbackKp = Math.floor(Math.random() * 3) + 1; // Generates normal safe KP (1-3)
         const kpValEl = document.getElementById('kp-val');
         if (kpValEl) kpValEl.textContent = fallbackKp;
         
@@ -156,7 +148,7 @@ async function fetchLiveData() {
         if (gaugeKpEl) gaugeKpEl.textContent = fallbackKp;
     }
     
-    // Always load SFI and A-Index metrics so boxes are never empty
+    // SFI এবং A-Index এর ঘরগুলো সবসময় ডাটা দিয়ে লোড থাকবে
     const mockSFI = Math.floor(Math.random() * (150 - 90 + 1)) + 90;
     const mockA = Math.floor(Math.random() * 12) + 3;
     
@@ -170,7 +162,7 @@ async function fetchLiveData() {
     if (aValEl) aValEl.textContent = mockA;
 }
 
-// Initial Live Sync Run
+// Initial Sync
 fetchLiveData();
 // Auto Sync Refresh Rate (Every 10 minutes)
 setInterval(fetchLiveData, 600000);
